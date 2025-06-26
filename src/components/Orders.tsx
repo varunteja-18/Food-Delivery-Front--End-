@@ -1,5 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 interface OrderItem {
   id: number;
@@ -12,17 +12,26 @@ interface Order {
   id: number;
   items: OrderItem[];
   total: number;
-  date: string;
+  orderDate: string;
 }
 
 const Orders: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    const storedOrders = localStorage.getItem('orders');
-    if (storedOrders) {
-      setOrders(JSON.parse(storedOrders));
-    }
+    const fetchOrders = async () => {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!user.email) return;
+
+      try {
+        const res = await axios.get(`http://localhost:5125/api/Orders/${user.email}`);
+        setOrders(res.data);
+      } catch (error) {
+        console.error('Failed to fetch orders:', error);
+      }
+    };
+
+    fetchOrders();
   }, []);
 
   return (
@@ -34,7 +43,7 @@ const Orders: React.FC = () => {
         <ul>
           {orders.map(order => (
             <li key={order.id}>
-              <strong>Order #{order.id}</strong> 
+              <strong>Order #{order.id}</strong>
               <ul>
                 {order.items.map(item => (
                   <li key={item.id}>
@@ -43,6 +52,7 @@ const Orders: React.FC = () => {
                 ))}
               </ul>
               <p><strong>Total:</strong> ₹{order.total.toFixed(2)}</p>
+              <p><small>Placed on: {new Date(order.orderDate).toLocaleString()}</small></p>
               <hr />
             </li>
           ))}

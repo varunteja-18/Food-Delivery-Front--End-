@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Cart: React.FC = () => {
   const { cart, addToCart, removeFromCart, clearCart } = useCart();
@@ -8,19 +9,30 @@ const Cart: React.FC = () => {
 
   const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  const handleConfirmOrder = () => {
-    const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    const newOrder = {
-      id: Date.now(),
-      items: cart,
-      total,
-      date: new Date().toLocaleString(),
+  const handleConfirmOrder = async () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+    const orderData = {
+      email: user.email,
+      items: cart.map(item => ({
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity
+      })),
+      total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      orderDate: new Date().toISOString()
     };
-    localStorage.setItem('orders', JSON.stringify([...existingOrders, newOrder]));
+
+    await axios.post('http://localhost:5125/api/Orders', orderData);
+    alert('Order confirmed!');
     clearCart();
-    alert('✅ Order confirmed!');
-    navigate('/orders');
-  };
+  } catch (err) {
+    console.error(err);
+    alert('Order failed!');
+  }
+};
+
 
   return (
     <div className="cart-page">

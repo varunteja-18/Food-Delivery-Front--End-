@@ -1,20 +1,43 @@
+import axios from 'axios';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import './Auth.css';
 
-const Login: React.FC = () => {
+interface LoginProps {
+  onLogin: (user: { id: number; username: string }) => void;
+}
+
+const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && password) {
-      localStorage.setItem('user', JSON.stringify({ email }));
+
+    try {
+      const res = await axios.post('http://localhost:5125/api/auth/login', {
+        email,
+        password
+      });
+
+      const user = res.data;
+
+      // Save user info locally
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('userId', user.id.toString());
       localStorage.setItem('loggedIn', 'true');
+
+      // Pass user to App state
+      onLogin(user);
+
+      alert('✅ Login Successful!');
       navigate('/home');
-    } else {
-      alert('Enter credentials');
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        alert('❌ Invalid username or password.');
+      } else {
+        alert('❌ Login failed. Please try again later.');
+      }
     }
   };
 
@@ -22,10 +45,23 @@ const Login: React.FC = () => {
     <div className="auth-container">
       <h2>Login</h2>
       <form onSubmit={handleLogin}>
-        <input type="email" placeholder="Email" onChange={(e) => setEmail(e.target.value)} required />
-        <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} required />
+        <input
+          type="text"
+          placeholder="Username"
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
         <button type="submit">Login</button>
-        <p>Don't have an account? <span onClick={() => navigate('/register')}>Register</span></p>
+        <p>
+          Don't have an account?{' '}
+          <span onClick={() => navigate('/register')}>Register</span>
+        </p>
       </form>
     </div>
   );

@@ -1,22 +1,28 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import './Auth.css';
+import axios from 'axios';
 
 const Register: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-const handleRegister = () => {
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+
     if (!email || !password) {
       alert('Please fill in both fields.');
       return;
     }
 
-    const user = { email, password };
-    localStorage.setItem('user', JSON.stringify(user));
-    alert('✅ Registration Successful! Please login.');
-    navigate('/');
+    try {
+      await axios.post(' http://localhost:5125/api/Auth/register', { email, password });
+      alert('✅ Registration Successful! Please login.');
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      alert('Registration failed. Email may already be in use.');
+    }
   };
 
   return (
