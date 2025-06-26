@@ -24,8 +24,8 @@ const Orders: React.FC = () => {
       if (!user.email) return;
 
       try {
-        const res = await axios.get(`http://localhost:5125/api/Orders/${user.email}`);
-        setOrders(res.data);
+        const result = await axios.get(`http://localhost:5125/api/Orders/${user.email}`);
+        setOrders(result.data);
       } catch (error) {
         console.error('Failed to fetch orders:', error);
       }

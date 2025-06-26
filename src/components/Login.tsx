@@ -15,12 +15,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     e.preventDefault();
 
     try {
-      const res = await axios.post('http://localhost:5125/api/auth/login', {
+      const result = await axios.post('http://localhost:5125/api/auth/login', {
         email,
         password
       });
 
-      const user = res.data;
+      const user = result.data;
 
       // Save user info locally
       localStorage.setItem('user', JSON.stringify(user));
